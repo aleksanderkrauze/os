@@ -21,6 +21,8 @@ lazy_static! {
             static mut STACK: [u8; STACK_SIZE] = [0; STACK_SIZE];
 
             let stack_start = VirtAddr::from_ptr(unsafe { &STACK });
+
+            #[allow(clippy::let_and_return)]
             let stack_end = stack_start + STACK_SIZE;
             stack_end
         };
