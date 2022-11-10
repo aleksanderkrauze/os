@@ -13,7 +13,7 @@ use os::vga_buffer;
 fn handler(info: &PanicInfo) -> ! {
     println!("{}", info);
 
-    loop {}
+    os::hlt_loop()
 }
 
 #[cfg(not(test))]
@@ -31,7 +31,7 @@ pub extern "C" fn _start() -> ! {
         ));
     println!("Here is some data: {}, {}", 42, 2.0 / 3.0);
 
-    loop {}
+    os::hlt_loop()
 }
 
 #[cfg(test)]
@@ -41,7 +41,7 @@ pub extern "C" fn _start() -> ! {
 
     test_main();
 
-    loop {}
+    os::hlt_loop()
 }
 
 #[cfg(test)]

@@ -59,7 +59,7 @@ extern "x86-interrupt" fn test_double_fault_handler(_: InterruptStackFrame, _: u
     serial_println!("[ok]");
     exit_qemu(QemuExitCode::Success);
 
-    loop {}
+    os::hlt_loop()
 }
 
 pub fn test_init_idt() {
