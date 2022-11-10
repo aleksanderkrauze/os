@@ -1,4 +1,4 @@
-use crate::println;
+use crate::vga_println;
 
 use lazy_static::lazy_static;
 use pic8259::ChainedPics;
@@ -28,7 +28,7 @@ pub fn init_idt() {
 }
 
 extern "x86-interrupt" fn breakpoint_handler(stack_frame: InterruptStackFrame) {
-    println!("EXCEPTION: BREAKPOINT\n{:#?}", stack_frame);
+    vga_println!("EXCEPTION: BREAKPOINT\n{:#?}", stack_frame);
 }
 
 extern "x86-interrupt" fn double_fault_handler(stack_frame: InterruptStackFrame, _: u64) -> ! {
@@ -39,7 +39,7 @@ extern "x86-interrupt" fn timer_interrupt_handler(_: InterruptStackFrame) {
     use core::sync::atomic::{AtomicUsize, Ordering};
     static COUNTER: AtomicUsize = AtomicUsize::new(0);
     let c = COUNTER.fetch_add(1, Ordering::SeqCst);
-    println!("{}", c);
+    vga_println!("{}", c);
 
     unsafe {
         PICS.lock()

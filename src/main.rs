@@ -8,11 +8,11 @@
 use core::panic::PanicInfo;
 
 use os::io::vga;
-use os::println;
+use os::vga_println;
 
 #[panic_handler]
 fn handler(info: &PanicInfo) -> ! {
-    println!("{}", info);
+    vga_println!("{}", info);
 
     os::hlt_loop()
 }
@@ -22,12 +22,12 @@ fn handler(info: &PanicInfo) -> ! {
 pub extern "C" fn _start() -> ! {
     os::init();
 
-    println!("Hello {}!", "World");
-    println!();
+    vga_println!("Hello {}!", "World");
+    vga_println!();
     vga::WRITER
         .lock()
         .set_color(vga::ColorCode::new(vga::Color::LightRed, vga::Color::Black));
-    println!("Here is some data: {}, {}", 42, 2.0 / 3.0);
+    vga_println!("Here is some data: {}, {}", 42, 2.0 / 3.0);
 
     os::hlt_loop()
 }

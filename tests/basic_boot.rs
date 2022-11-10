@@ -6,7 +6,7 @@
 
 use core::panic::PanicInfo;
 
-use os::println;
+use os::vga_println;
 
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
@@ -24,5 +24,5 @@ pub extern "C" fn _start() -> ! {
 
 #[test_case]
 fn test_println() {
-    println!("test_println output");
+    vga_println!("test_println output");
 }

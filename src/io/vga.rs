@@ -55,9 +55,7 @@ impl ScreenChar {
 
     fn write_volatile(&mut self, src: Self) {
         // SAFETY: We have exclusive access to self.
-        unsafe {
-            ptr::addr_of_mut!(*self).write_volatile(src);
-        }
+        unsafe { ptr::addr_of_mut!(*self).write_volatile(src) }
     }
 
     fn read_volatile(&mut self) -> Self {
@@ -176,14 +174,14 @@ lazy_static! {
 }
 
 #[macro_export]
-macro_rules! print {
+macro_rules! vga_print {
     ($($arg:tt)*) => ($crate::io::vga::_print(format_args!($($arg)*)));
 }
 
 #[macro_export]
-macro_rules! println {
-    () => ($crate::print!("\n"));
-    ($($arg:tt)*) => ($crate::print!("{}\n", format_args!($($arg)*)));
+macro_rules! vga_println {
+    () => ($crate::vga_print!("\n"));
+    ($($arg:tt)*) => ($crate::vga_print!("{}\n", format_args!($($arg)*)));
 }
 
 #[doc(hidden)]
@@ -199,13 +197,13 @@ mod tests {
 
     #[test_case]
     fn test_println_simple() {
-        println!("test_println_simple output");
+        vga_println!("test_println_simple output");
     }
 
     #[test_case]
     fn test_println_many() {
         for _ in 0..100 {
-            println!("test_println_many output");
+            vga_println!("test_println_many output");
         }
     }
 
