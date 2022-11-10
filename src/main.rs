@@ -8,7 +8,7 @@
 use core::panic::PanicInfo;
 
 use os::println;
-use os::vga_buffer;
+use os::vga;
 
 #[panic_handler]
 fn handler(info: &PanicInfo) -> ! {
@@ -24,12 +24,9 @@ pub extern "C" fn _start() -> ! {
 
     println!("Hello {}!", "World");
     println!();
-    vga_buffer::WRITER
+    vga::WRITER
         .lock()
-        .set_color(vga_buffer::ColorCode::new(
-            vga_buffer::Color::LightRed,
-            vga_buffer::Color::Black,
-        ));
+        .set_color(vga::ColorCode::new(vga::Color::LightRed, vga::Color::Black));
     println!("Here is some data: {}, {}", 42, 2.0 / 3.0);
 
     os::hlt_loop()
