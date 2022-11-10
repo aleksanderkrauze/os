@@ -74,8 +74,3 @@ pub extern "C" fn _start() -> ! {
 fn handler(info: &PanicInfo) -> ! {
     test_panic_handler(info)
 }
-
-#[test_case]
-fn trivial_assertion() {
-    assert_eq!(1, 1);
-}

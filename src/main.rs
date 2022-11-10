@@ -16,6 +16,7 @@ fn handler(info: &PanicInfo) -> ! {
     loop {}
 }
 
+#[cfg(not(test))]
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
     println!("Hello {}!", "World");
@@ -29,4 +30,20 @@ pub extern "C" fn _start() -> ! {
     println!("Here is some data: {}, {}", 42, 2.0 / 3.0);
 
     loop {}
+}
+
+#[cfg(test)]
+#[no_mangle]
+pub extern "C" fn _start() -> ! {
+    test_main();
+
+    loop {}
+}
+
+#[cfg(test)]
+mod tests {
+    #[test_case]
+    fn trivial_assertion() {
+        assert_eq!(1, 1);
+    }
 }
