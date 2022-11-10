@@ -5,7 +5,6 @@ use pic8259::ChainedPics;
 use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame};
 
 use crate::gdt;
-use crate::print;
 
 lazy_static! {
     static ref IDT: InterruptDescriptorTable = {

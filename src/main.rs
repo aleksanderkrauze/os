@@ -7,8 +7,8 @@
 
 use core::panic::PanicInfo;
 
+use os::io::vga;
 use os::println;
-use os::vga;
 
 #[panic_handler]
 fn handler(info: &PanicInfo) -> ! {
