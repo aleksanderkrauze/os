@@ -16,9 +16,18 @@ fn handler(info: &PanicInfo) -> ! {
     loop {}
 }
 
-#[cfg(not(test))]
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
+    os::init();
+
+    x86_64::instructions::interrupts::int3();
+
+    #[cfg(test)]
+    {
+        test_main();
+        loop {}
+    }
+
     println!("Hello {}!", "World");
     println!();
     vga_buffer::WRITER
@@ -28,14 +37,6 @@ pub extern "C" fn _start() -> ! {
             vga_buffer::Color::Black,
         ));
     println!("Here is some data: {}, {}", 42, 2.0 / 3.0);
-
-    loop {}
-}
-
-#[cfg(test)]
-#[no_mangle]
-pub extern "C" fn _start() -> ! {
-    test_main();
 
     loop {}
 }
