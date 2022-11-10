@@ -3,6 +3,7 @@
 #![feature(custom_test_frameworks)]
 #![test_runner(os::test_runner)]
 #![reexport_test_harness_main = "test_main"]
+#![cfg_attr(test, allow(unused_imports))]
 
 use core::panic::PanicInfo;
 
