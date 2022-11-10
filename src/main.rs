@@ -4,10 +4,27 @@
 #![test_runner(crate::tests::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
-mod vga_buffer;
-
 use core::panic::PanicInfo;
 
+use x86_64::instructions::port::Port;
+
+mod vga_buffer;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[repr(u32)]
+pub enum QemuExitCode {
+    Success = 0x10,
+    Failed = 0x11,
+}
+
+const QEMU_EXIT_IO_PORT: u16 = 0xf4;
+
+pub fn exit_qemu(exit_code: QemuExitCode) {
+    unsafe {
+        let mut port = Port::new(QEMU_EXIT_IO_PORT);
+        port.write(exit_code as u32);
+    }
+}
 #[panic_handler]
 fn handler(info: &PanicInfo) -> ! {
     println!("{}", info);
@@ -45,9 +62,12 @@ mod tests {
 
     pub fn test_runner(tests: &[&dyn Fn()]) {
         println!("Running {} tests", tests.len());
+
         for test in tests {
             test();
         }
+
+        exit_qemu(QemuExitCode::Success);
     }
 
     #[test_case]
