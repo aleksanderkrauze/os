@@ -21,12 +21,6 @@ fn handler(info: &PanicInfo) -> ! {
 pub extern "C" fn _start() -> ! {
     os::init();
 
-    fn f() {
-        f()
-    }
-
-    f();
-
     println!("Hello {}!", "World");
     println!();
     vga_buffer::WRITER
