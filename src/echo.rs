@@ -3,6 +3,7 @@ use core::fmt::Write;
 use lazy_static::lazy_static;
 use spin::Mutex;
 
+use crate::io::vga::{Color, ColorCode};
 use crate::vga_print;
 
 const BUFFER_SIZE: usize = 75;
@@ -62,12 +63,18 @@ pub fn echo(c: char) {
             let buff = DEFAULT_ECHO.lock().clear();
             let mut writer = crate::io::vga::WRITER.lock();
 
-            write!(writer, "\n@ ").unwrap();
+            write!(writer, "\n").unwrap();
+            let light_blue = ColorCode::new(Color::LightBlue, Color::Black);
+            let old_color = writer.set_color(light_blue);
+            write!(writer, "@ ").unwrap();
+
             let mut char_buffer = [0; 4];
             for c in buff.data() {
                 let c = c.encode_utf8(&mut char_buffer);
                 writer.write_string(c);
             }
+
+            writer.set_color(old_color);
             write!(writer, "\n\n> ").unwrap();
         }
         c => {

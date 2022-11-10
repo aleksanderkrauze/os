@@ -5,9 +5,10 @@
 #![reexport_test_harness_main = "test_main"]
 #![cfg_attr(test, allow(unused_imports))]
 
+use core::fmt::Write;
 use core::panic::PanicInfo;
 
-use os::io::vga;
+use os::io::vga::{Color, ColorCode, WRITER};
 use os::vga_println;
 
 #[panic_handler]
@@ -22,7 +23,18 @@ fn handler(info: &PanicInfo) -> ! {
 pub extern "C" fn _start() -> ! {
     os::init();
 
-    vga_println!("Hello {}!\n", "World");
+    let mut writer = WRITER.lock();
+    let light_blue = ColorCode::new(Color::LightBlue, Color::Black);
+    let old_color = writer.set_color(light_blue);
+
+    writeln!(writer, "You have fallen into deep cave").unwrap();
+    writeln!(writer, "There is no one to help you").unwrap();
+    writeln!(writer, "You try screaming for help").unwrap();
+    writeln!(writer, "But the only thing you can hear...\n").unwrap();
+    writeln!(writer, "Is the Echo\n").unwrap();
+
+    writer.set_color(old_color);
+    drop(writer);
 
     os::echo::echo_prompt();
 

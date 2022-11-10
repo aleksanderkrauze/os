@@ -101,8 +101,15 @@ impl VGAWriter {
         self.row_position = 0;
     }
 
-    pub fn set_color(&mut self, color: ColorCode) {
+    /// Set new color and return the old one
+    pub fn set_color(&mut self, color: ColorCode) -> ColorCode {
+        let old = self.color_code;
         self.color_code = color;
+        old
+    }
+
+    pub fn color(&self) -> ColorCode {
+        self.color_code
     }
 
     pub fn write_string<T: AsRef<[u8]> + ?Sized>(&mut self, s: &T) {
