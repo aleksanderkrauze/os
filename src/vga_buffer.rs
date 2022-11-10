@@ -1,3 +1,4 @@
+use core::convert::AsRef;
 use core::fmt::{self, Write};
 use core::ptr;
 
@@ -28,10 +29,10 @@ pub enum Color {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(transparent)]
-struct ColorCode(u8);
+pub struct ColorCode(u8);
 
 impl ColorCode {
-    fn new(foreground: Color, background: Color) -> Self {
+    pub fn new(foreground: Color, background: Color) -> Self {
         Self((background as u8) << 4 | (foreground as u8))
     }
 }
@@ -44,6 +45,13 @@ struct ScreenChar {
 }
 
 impl ScreenChar {
+    fn new(byte: u8, color: ColorCode) -> Self {
+        Self {
+            ascii_character: byte,
+            color_code: color,
+        }
+    }
+
     fn write_volatile(&mut self, src: Self) {
         // SAFETY: We have exclusive access to self.
         unsafe {
@@ -67,13 +75,30 @@ struct Buffer {
 
 pub struct VGAWriter {
     column_position: usize,
+    row_position: usize,
     color_code: ColorCode,
     buffer: &'static mut Buffer,
 }
 
 impl VGAWriter {
-    pub fn write_string(&mut self, s: &str) {
-        for byte in s.bytes() {
+    /// # Safety
+    ///
+    /// This function can only be called once.
+    pub unsafe fn new() -> Self {
+        Self {
+            column_position: 0,
+            row_position: 0,
+            color_code: ColorCode::new(Color::Yellow, Color::Black),
+            buffer: &mut *(0xb8000 as *mut Buffer),
+        }
+    }
+
+    pub fn set_color(&mut self, color: ColorCode) {
+        self.color_code = color;
+    }
+
+    pub fn write_string<T: AsRef<[u8]> + ?Sized>(&mut self, s: &T) {
+        for &byte in s.as_ref() {
             match byte {
                 // printable ASCII byte or newline
                 0x20..=0x7e | b'\n' => self.write_byte(byte),
@@ -91,20 +116,23 @@ impl VGAWriter {
                     self.new_line();
                 }
 
-                let row = BUFFER_HEIGHT - 1;
+                let row = self.row_position;
                 let col = self.column_position;
-
                 let color_code = self.color_code;
-                self.buffer.chars[row][col].write_volatile(ScreenChar {
-                    ascii_character: byte,
-                    color_code,
-                });
+
+                self.buffer.chars[row][col].write_volatile(ScreenChar::new(byte, color_code));
                 self.column_position += 1;
             }
         }
     }
 
     fn new_line(&mut self) {
+        if self.row_position < BUFFER_HEIGHT - 1 {
+            self.column_position = 0;
+            self.row_position += 1;
+            return;
+        }
+
         for row in 1..BUFFER_HEIGHT {
             for col in 0..BUFFER_WIDTH {
                 let character = self.buffer.chars[row][col].read_volatile();
@@ -134,11 +162,7 @@ impl fmt::Write for VGAWriter {
 }
 
 lazy_static! {
-    pub static ref WRITER: Mutex<VGAWriter> = Mutex::new(VGAWriter {
-        column_position: 0,
-        color_code: ColorCode::new(Color::Yellow, Color::Black),
-        buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
-    });
+    pub static ref WRITER: Mutex<VGAWriter> = Mutex::new(unsafe { VGAWriter::new() });
 }
 
 #[macro_export]
