@@ -93,6 +93,15 @@ impl VGAWriter {
         }
     }
 
+    pub fn clear(&mut self) {
+        for row in 0..BUFFER_HEIGHT {
+            self.clear_row(row);
+        }
+
+        self.column_position = 0;
+        self.row_position = 0;
+    }
+
     pub fn set_color(&mut self, color: ColorCode) {
         self.color_code = color;
     }
@@ -179,4 +188,33 @@ macro_rules! println {
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
     WRITER.lock().write_fmt(args).unwrap();
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test_case]
+    fn test_println_simple() {
+        println!("test_println_simple output");
+    }
+
+    #[test_case]
+    fn test_println_many() {
+        for _ in 0..100 {
+            println!("test_println_many output");
+        }
+    }
+
+    #[test_case]
+    fn test_println_output() {
+        WRITER.lock().clear();
+
+        let s = "Some test string that fits on a single line";
+        println!("{}", s);
+        for (i, c) in s.chars().enumerate() {
+            let screen_char = WRITER.lock().buffer.chars[0][i].read_volatile();
+            assert_eq!(char::from(screen_char.ascii_character), c);
+        }
+    }
 }
