@@ -4,6 +4,10 @@ description = "A simple OS following blog series: https://os.phil-opp.com/."
 version = "0.1.0"
 edition = "2021"
 
+[[test]]
+name = "should_panic"
+harness = false
+
 [dependencies]
 bootloader = "0.9.23"
 # TODO: upgrade to newer bootloader version
