@@ -1,5 +1,8 @@
-use core::fmt;
+use core::fmt::{self, Write};
 use core::ptr;
+
+use lazy_static::lazy_static;
+use spin::Mutex;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -130,15 +133,26 @@ impl fmt::Write for VGAWriter {
     }
 }
 
-pub fn print_something() {
-    use core::fmt::Write;
-    let mut writer = VGAWriter {
+lazy_static! {
+    pub static ref WRITER: Mutex<VGAWriter> = Mutex::new(VGAWriter {
         column_position: 0,
         color_code: ColorCode::new(Color::Yellow, Color::Black),
         buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
-    };
+    });
+}
 
-    writer.write_byte(b'H');
-    writer.write_string("ello!\n");
-    write!(writer, "The numbers are {} and {}", 42, 1.0 / 3.0).unwrap();
+#[macro_export]
+macro_rules! print {
+    ($($arg:tt)*) => ($crate::vga_buffer::_print(format_args!($($arg)*)));
+}
+
+#[macro_export]
+macro_rules! println {
+    () => ($crate::print!("\n"));
+    ($($arg:tt)*) => ($crate::print!("{}\n", format_args!($($arg)*)));
+}
+
+#[doc(hidden)]
+pub fn _print(args: fmt::Arguments) {
+    WRITER.lock().write_fmt(args).unwrap();
 }
