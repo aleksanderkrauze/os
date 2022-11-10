@@ -4,6 +4,7 @@ use core::ptr;
 
 use lazy_static::lazy_static;
 use spin::Mutex;
+use x86_64::instructions::interrupts::without_interrupts;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -187,7 +188,9 @@ macro_rules! println {
 
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
-    WRITER.lock().write_fmt(args).unwrap();
+    without_interrupts(|| {
+        WRITER.lock().write_fmt(args).unwrap();
+    });
 }
 
 #[cfg(test)]
@@ -208,13 +211,17 @@ mod tests {
 
     #[test_case]
     fn test_println_output() {
-        WRITER.lock().clear();
+        without_interrupts(|| {
+            let mut writer = WRITER.lock();
+            writer.clear();
 
-        let s = "Some test string that fits on a single line";
-        println!("{}", s);
-        for (i, c) in s.chars().enumerate() {
-            let screen_char = WRITER.lock().buffer.chars[0][i].read_volatile();
-            assert_eq!(char::from(screen_char.ascii_character), c);
-        }
+            let s = "Some test string that fits on a single line";
+            writeln!(writer, "{}", s).expect("writeln! failed");
+
+            for (i, c) in s.chars().enumerate() {
+                let screen_char = writer.buffer.chars[0][i].read_volatile();
+                assert_eq!(char::from(screen_char.ascii_character), c);
+            }
+        });
     }
 }
