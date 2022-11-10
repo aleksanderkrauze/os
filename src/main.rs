@@ -1,7 +1,7 @@
 #![no_std]
 #![no_main]
 #![feature(custom_test_frameworks)]
-#![test_runner(os::test_runner)]
+#![test_runner(os::testing::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 #![cfg_attr(test, allow(unused_imports))]
 

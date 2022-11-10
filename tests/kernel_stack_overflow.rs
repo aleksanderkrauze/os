@@ -8,11 +8,12 @@ use core::ptr;
 use lazy_static::lazy_static;
 use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame};
 
-use os::{exit_qemu, serial_print, serial_println, QemuExitCode};
+use os::testing::{exit_qemu, QemuExitCode};
+use os::{serial_print, serial_println};
 
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
-    os::test_panic_handler(info)
+    os::testing::test_panic_handler(info)
 }
 
 #[no_mangle]
