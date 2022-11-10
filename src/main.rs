@@ -22,12 +22,9 @@ fn handler(info: &PanicInfo) -> ! {
 pub extern "C" fn _start() -> ! {
     os::init();
 
-    vga_println!("Hello {}!", "World");
-    vga_println!();
-    vga::WRITER
-        .lock()
-        .set_color(vga::ColorCode::new(vga::Color::LightRed, vga::Color::Black));
-    vga_println!("Here is some data: {}, {}", 42, 2.0 / 3.0);
+    vga_println!("Hello {}!\n", "World");
+
+    os::echo::echo_prompt();
 
     os::hlt_loop()
 }
