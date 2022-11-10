@@ -61,7 +61,7 @@ impl ScreenChar {
 
     fn read_volatile(&mut self) -> Self {
         // SAFETY: We have exclusive access to self.
-        unsafe { ptr::addr_of_mut!(*self).read_volatile() }
+        unsafe { ptr::addr_of!(*self).read_volatile() }
     }
 }
 
