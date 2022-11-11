@@ -3,7 +3,7 @@ use core::fmt::Write;
 use lazy_static::lazy_static;
 use spin::Mutex;
 
-use crate::io::vga::{Color, ColorCode};
+use crate::io::vga::{Color, ColorCode, WRITER};
 use crate::vga_print;
 
 const BUFFER_SIZE: usize = 75;
@@ -53,15 +53,26 @@ lazy_static! {
     static ref DEFAULT_ECHO: Mutex<EchoBuffer> = Mutex::new(EchoBuffer::new());
 }
 
-pub fn echo_prompt() {
-    vga_print!("> ");
+pub fn init() {
+    let mut writer = WRITER.lock();
+    let light_blue = ColorCode::new(Color::LightBlue, Color::Black);
+    let old_color = writer.set_color(light_blue);
+
+    writeln!(writer, "You have fallen into deep cave").unwrap();
+    writeln!(writer, "There is no one to help you").unwrap();
+    writeln!(writer, "You try screaming for help").unwrap();
+    writeln!(writer, "But the only thing you can hear...\n").unwrap();
+    writeln!(writer, "Is the Echo\n").unwrap();
+
+    writer.set_color(old_color);
+    write!(writer, "> ").unwrap();
 }
 
-pub fn echo(c: char) {
+pub fn process(c: char) {
     match c {
         '\n' => {
             let buff = DEFAULT_ECHO.lock().clear();
-            let mut writer = crate::io::vga::WRITER.lock();
+            let mut writer = WRITER.lock();
 
             write!(writer, "\n").unwrap();
             let light_blue = ColorCode::new(Color::LightBlue, Color::Black);
