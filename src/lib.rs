@@ -9,6 +9,7 @@ pub mod echo;
 pub mod gdt;
 pub mod interrupts;
 pub mod io;
+pub mod mem;
 pub mod testing;
 
 pub fn init() {
