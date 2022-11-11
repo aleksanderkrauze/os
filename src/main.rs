@@ -21,34 +21,26 @@ fn handler(info: &PanicInfo) -> ! {
 
 #[allow(dead_code)]
 fn test(boot_info: &'static BootInfo) {
-    use x86_64::{structures::paging::PageTable, VirtAddr};
+    use x86_64::{structures::paging::Translate, VirtAddr};
 
     let phys_mem_offset = VirtAddr::new(boot_info.physical_memory_offset);
-    let l4_table = unsafe { mem::active_level_4_table(phys_mem_offset) };
+    let mapper = unsafe { mem::init_mapper(phys_mem_offset) };
 
-    for (i, entry) in l4_table.iter().enumerate() {
-        if !entry.is_unused() {
-            vga_println!("L4 Entry {}: {:?}", i, entry);
+    let addresses = [
+        // the identity-mapped vga buffer page
+        0xb8000,
+        // some code page
+        0x201008,
+        // some stack page
+        0x0100_0020_1a10,
+        // virtual address mapped to physical address 0
+        boot_info.physical_memory_offset,
+    ];
 
-            // get the physical address from the entry and convert it
-            let phys = entry.frame().unwrap().start_address();
-            let virt = phys.as_u64() + boot_info.physical_memory_offset;
-            let ptr = VirtAddr::new(virt).as_mut_ptr();
-            let l3_table: &PageTable = unsafe { &*ptr };
-
-            let old = os::io::vga::WRITER.lock().set_color(
-                os::io::vga::ColorCode::new_with_black_background(os::io::vga::Color::LightRed),
-            );
-
-            // print non-empty entries of the level 3 table
-            for (i, entry) in l3_table.iter().enumerate() {
-                if !entry.is_unused() {
-                    vga_println!("  L3 Entry {}: {:?}", i, entry);
-                }
-            }
-
-            os::io::vga::WRITER.lock().set_color(old);
-        }
+    for &address in &addresses {
+        let virt = VirtAddr::new(address);
+        let phys = mapper.translate_addr(virt);
+        vga_println!("{:?} -> {:?}", virt, phys);
     }
 
     os::hlt_loop();
