@@ -55,7 +55,7 @@ lazy_static! {
 
 pub fn init() {
     let mut writer = WRITER.lock();
-    let light_blue = ColorCode::new(Color::LightBlue, Color::Black);
+    let light_blue = ColorCode::new_with_black_background(Color::LightBlue);
     let old_color = writer.set_color(light_blue);
 
     writeln!(writer, "You have fallen into deep cave").unwrap();
@@ -75,7 +75,7 @@ pub fn process(c: char) {
             let mut writer = WRITER.lock();
 
             write!(writer, "\n").unwrap();
-            let light_blue = ColorCode::new(Color::LightBlue, Color::Black);
+            let light_blue = ColorCode::new_with_black_background(Color::LightBlue);
             let old_color = writer.set_color(light_blue);
             write!(writer, "@ ").unwrap();
 

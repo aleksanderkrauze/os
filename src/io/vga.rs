@@ -36,6 +36,10 @@ impl ColorCode {
     pub fn new(foreground: Color, background: Color) -> Self {
         Self((background as u8) << 4 | (foreground as u8))
     }
+
+    pub fn new_with_black_background(foreground: Color) -> Self {
+        Self::new(foreground, Color::Black)
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -87,7 +91,7 @@ impl VGAWriter {
         Self {
             column_position: 0,
             row_position: 0,
-            color_code: ColorCode::new(Color::LightCyan, Color::Black),
+            color_code: ColorCode::new_with_black_background(Color::LightCyan),
             buffer: &mut *(0xb8000 as *mut Buffer),
         }
     }
