@@ -8,6 +8,8 @@
 use core::fmt::Write;
 use core::panic::PanicInfo;
 
+use bootloader::{entry_point, BootInfo};
+
 use os::io::vga::{Color, ColorCode, WRITER};
 use os::vga_println;
 
@@ -18,10 +20,29 @@ fn handler(info: &PanicInfo) -> ! {
     os::hlt_loop()
 }
 
+fn test() {
+    use x86_64::registers::control::Cr3;
+
+    let (level_4_page_table, _) = Cr3::read();
+    vga_println!(
+        "Level 4 page table at: {:?}",
+        level_4_page_table.start_address()
+    );
+
+    os::hlt_loop();
+}
+
 #[cfg(not(test))]
-#[no_mangle]
-pub extern "C" fn _start() -> ! {
+entry_point!(kernel_main);
+#[cfg(test)]
+entry_point!(test_kernel_main);
+
+pub fn kernel_main(boot_info: &'static BootInfo) -> ! {
     os::init();
+
+    vga_println!("BootInfo\n{:#?}", boot_info);
+
+    test();
 
     let mut writer = WRITER.lock();
     let light_blue = ColorCode::new(Color::LightBlue, Color::Black);
@@ -42,8 +63,7 @@ pub extern "C" fn _start() -> ! {
 }
 
 #[cfg(test)]
-#[no_mangle]
-pub extern "C" fn _start() -> ! {
+fn test_kernel_main(_: &'static BootInfo) -> ! {
     os::init();
 
     test_main();
